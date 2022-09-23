@@ -18,7 +18,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new ProcessReports)
             ->name('process_reports')
             ->withoutOverlapping(30) // Unlock after 30 minutes
-            ->everyMinute();
+            ->everyFifteenMinutes();
     }
 
     /**
