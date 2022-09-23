@@ -2,7 +2,7 @@
 
 This application allows you to select up to 5 currencies and find their current exchange rates compared to a base currency (defaults to USD). You can also select from 3 different date ranges and generate historial exchange rate reports.
 
-Here's a video walkthrough:
+Here's a video walkthrough (you may need to unmute):
 
 https://user-images.githubusercontent.com/114114611/191901284-018e62f0-9b23-42ab-810e-eb9faea78357.mp4
 
