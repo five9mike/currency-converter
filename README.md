@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/114114611/191901284-018e62f0-9b23-42ab
 - Move to the application folder: `cd currency-converter`
 - Copy the example env file: `cp .env.example .env`
 - Update the necessary `.env` values, specifically the [`DB_*` settings](https://github.com/five9mike/currency-converter/blob/main/.env.example#L11-L16) and the [`CURRENCY_*` settings](https://github.com/five9mike/currency-converter/blob/main/.env.example#L60-L62)
-    - Note: You should fill out all the `CURRENCY_*` settings and can [config defaults](https://github.com/five9mike/currency-converter/blob/main/config/currency.php) for the URL/currency default but will need your own API key.
+    - Note: You should fill out all the `CURRENCY_*` settings and can mirror the [config defaults](https://github.com/five9mike/currency-converter/blob/main/config/currency.php) for the URL/currency but will need your own API key.
 - Install composer packages: `composer install`
 - Install npm packages: `npm install`
 - Run database migrations: `php artisan migrate`
@@ -44,7 +44,7 @@ The [ProcessReports](https://github.com/five9mike/currency-converter/blob/main/a
 
 **Database Design**
 
-The migration for the [reports table](https://github.com/five9mike/currency-converter/blob/main/database/migrations/2022_09_20_064604_create_reports_table.php) will give you a good idea of its architecture. In short, after a report request is made it stored the range in months and the interval as a human readable time period; ie. month, week, day.
+The migration for the [reports table](https://github.com/five9mike/currency-converter/blob/main/database/migrations/2022_09_20_064604_create_reports_table.php) will give you a good idea of its architecture. In short, after a report request is made it stores the range in months and the interval as a human readable time period; ie. month, week, day.
 
 The currencies requested are stored as json in the `currencies` field and once the reporting data is generated its stored as a json object in the `data` field. The `status` field throughout the lifetime if a report can be `pending`, `processing` or `complete` and only `complete` reports can be viewed.
 
@@ -66,7 +66,7 @@ I believe its better to dispatch the report processing to a queue rather than re
 
 **Datawarehouse**
 
-Given the static nature of currency exchange rates all this could be stored in a datawarehouse rather than relying on an API. This would minimize API requests, speed up processing and allow for caching on a more granualar level.
+Given the static nature of currency exchange rates all this could be stored in a datawarehouse rather than relying on an API. This would minimize API requests, speed up processing and allow for caching on a more granular level.
 
 **Vuejs**
 
