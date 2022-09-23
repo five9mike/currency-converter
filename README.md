@@ -12,7 +12,7 @@ https://user-images.githubusercontent.com/114114611/191901284-018e62f0-9b23-42ab
 - Move to the application folder: `cd currency-converter`
 - Copy the example env file: `cp .env.example .env`
 - Update the necessary `.env` values, specifically the [`DB_*` settings](https://github.com/five9mike/currency-converter/blob/main/.env.example#L11-L16) and the [`CURRENCY_*` settings](https://github.com/five9mike/currency-converter/blob/main/.env.example#L60-L62)
-    - Note: Some `CURRENCY_*` settings have [config defaults](https://github.com/five9mike/currency-converter/blob/main/config/currency.php) but you should fill them all in anyway
+    - Note: You should fill out all the `CURRENCY_*` settings and can [config defaults](https://github.com/five9mike/currency-converter/blob/main/config/currency.php) for the URL/currency default but will need your own API key.
 - Install composer packages: `composer install`
 - Install npm packages: `npm install`
 - Run database migrations: `php artisan migrate`
