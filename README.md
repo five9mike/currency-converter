@@ -1,64 +1,78 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Currency Converter
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This application allows you to select up to 5 currencies and find their current exchange rates compared to a base currency (defaults to USD). You can also select from 3 different date ranges and generate historial exchange rate reports.
 
-## About Laravel
+Here's a video walkthrough:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+https://user-images.githubusercontent.com/114114611/191901284-018e62f0-9b23-42ab-810e-eb9faea78357.mp4
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Clone the repo: `git clone https://github.com/five9mike/currency-converter.git`
+- Move to the application folder: `cd currency-converter`
+- Copy the example env file: `cp .env.example .env`
+- Update the necessary `.env` values, specifically the [`DB_*` settings](https://github.com/five9mike/currency-converter/blob/main/.env.example#L11-L16) and the [`CURRENCY_*` settings](https://github.com/five9mike/currency-converter/blob/main/.env.example#L60-L62)
+    - Note: Some `CURRENCY_*` settings have [config defaults](https://github.com/five9mike/currency-converter/blob/main/config/currency.php) but you should fill them all in anyway
+- Install composer packages: `composer install`
+- Install npm packages: `npm install`
+- Run database migrations: `php artisan migrate`
+- Generate unique app key: `php artisan key:generate`
 
-## Learning Laravel
+## Running
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- From within the application folder execute: `npm run dev`
+- In a new terminal serve the application: `php artisan serve`
+    - If you are using [Laravel Valet](https://laravel.com/docs/9.x/valet) to serve your applications locally you can safely skip the `serve` step.
+- To test the scheduled job: `php artisan schedule:run`
+    - You'll need to wait for a 15 minute interval for execution, alternatively change `everyFifteenMinutes` with `everyMinute` [here](https://github.com/five9mike/currency-converter/blob/main/app/Console/Kernel.php#L21).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Architecture
 
-## Laravel Sponsors
+Below are the key architecutral components of the application and brief explanations of each.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+**The HomeController**
 
-### Premium Partners
+Most of the magic happens in the [HomeController](https://github.com/five9mike/currency-converter/blob/main/app/Http/Controllers/HomeController.php). It's responsible for handling the `auth` middleware, displaying the home dashboard, individual reports, handling a report submission and generating the real time conversion rates via API.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+**CurrencyApi Service**
 
-## Contributing
+To handle interaction with the currency API I've implemented the [CurrencyApi service](https://github.com/five9mike/currency-converter/blob/main/app/Services/CurrencyApi.php). There's functions to find all the currencies, an individual conversion rate and well as historical rates. These all get routed through the services `request` method which handles the json decoding and optional caching.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**ProcessReports Job**
 
-## Code of Conduct
+The [ProcessReports](https://github.com/five9mike/currency-converter/blob/main/app/Console/ProcessReports.php) job handles the generation of the requested reports. It first marks any `pending` reports as `processing`. Afterwards, it queries the currency API for the requested currencies in the desired range. It uses the [configurable interval values](https://github.com/five9mike/currency-converter/blob/main/config/currency.php#L42-L55) to identify which dates throughout the range to include in the report. The job is [scheduled to run](https://github.com/five9mike/currency-converter/blob/main/app/Console/Kernel.php#L18-L21) every 15 minutes and is done so `withoutOverlapping`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Database Design**
 
-## Security Vulnerabilities
+The migration for the [reports table](https://github.com/five9mike/currency-converter/blob/main/database/migrations/2022_09_20_064604_create_reports_table.php) will give you a good idea of its architecture. In short, after a report request is made it stored the range in months and the interval as a human readable time period; ie. month, week, day.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The currencies requested are stored as json in the `currencies` field and once the reporting data is generated its stored as a json object in the `data` field. The `status` field throughout the lifetime if a report can be `pending`, `processing` or `complete` and only `complete` reports can be viewed.
 
-## License
+**Google Charts**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Google Charts open source solution has been implemented for the line chart. The implementation can be viewed in the [report view](https://github.com/five9mike/currency-converter/blob/main/resources/views/report.blade.php#L18-L39).
+
+## Improvements
+
+Given more time I believe the following could be implemented to improve the application and make it more secure, efficient and scalable.
+
+**Validation**
+
+There's basic frontend and [backend validation](https://github.com/five9mike/currency-converter/blob/main/app/Http/Controllers/HomeController.php#L52-L56) but this could be made a lot more robust. Specifically, ensure that currencies passed through forms appear in the list and that any range selected is part of the possible configuration options.
+
+**Queue**
+
+I believe its better to dispatch the report processing to a queue rather than rely on the schedule. That way each report gets processed as it comes in rather than waiting for the 15 minute window. A user could wait up to 14:59 for their report to start processing.
+
+**Datawarehouse**
+
+Given the static nature of currency exchange rates all this could be stored in a datawarehouse rather than relying on an API. This would minimize API requests, speed up processing and allow for caching on a more granualar level.
+
+**Vuejs**
+
+For simple applications I think the simpler the better, but of course a separate backend/frontend repo would be more ideal for a client/consumer facing application.
+
+**More Testing**
+
+I've included a [simple unit test](https://github.com/five9mike/currency-converter/tree/main/tests/Feature) to show I know how it works (this can be executed with `php artisan test`) but in a real production application more unit testing is needed to have a higher amount of coverage. 
+
